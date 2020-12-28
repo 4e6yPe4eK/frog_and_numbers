@@ -30,19 +30,27 @@ class Lily(pygame.sprite.Sprite):
         super().__init__()
         self.image = Lily.image.copy()
         self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
         self.rect.x = x
         self.rect.y = y
         self.num = int(text)
         string_rendered = font.render(text, True, pygame.Color('black'))
         self.image.blit(string_rendered, (self.image.get_width() // 3, self.image.get_height() // 2))
 
+    def collide(self, pos):
+        mask = pygame.mask.from_surface(pygame.surface.Surface((1, 1)))
+        offset = (pos[0] - self.rect.x, pos[1] - self.rect.y)
+        if self.mask.overlap_area(mask, offset):
+            return True
+        return False
+
     def update(self, *args):
-        if args and args[0].type == pygame.MOUSEBUTTONDOWN and self.rect.collidepoint(args[0].pos):
+        if args and args[0].type == pygame.MOUSEBUTTONDOWN and self.collide(args[0].pos):
             global ending, waiting, n, x, y, xe, ye, speed_x, speed_y, angle
             x, y = frog_coords
             xe = self.rect.x + (self.image.get_width() - frog.get_width()) // 2
             ye = self.rect.y + (self.image.get_height() - frog.get_height()) // 2
-            speed_x, speed_y = abs(xe - x), ye - y
+            speed_x, speed_y = abs(xe - x - frog.get_width()), ye - y
             ac = sqrt((xe - x) ** 2 + ye ** 2)
             ab = y
             bc = sqrt((xe - x) ** 2 + (ye - y) ** 2)
@@ -116,7 +124,6 @@ if __name__ == "__main__":
                 while some[0] + some[1] == var[0] or some[0] + some[1] == var[1]:
                     some = choice(pairs)
                 var.append(some[0] + some[1])
-                shuffle(var)
             else:
                 solution_type = False
                 time = int(time * 0.8)
@@ -141,7 +148,7 @@ if __name__ == "__main__":
                     if some[0] < some[1]:
                         some[0], some[1] = some[1], some[0]
                 var.append(some[0] - some[1])
-                shuffle(var)
+            shuffle(var)
             starting = False
             waiting = True
             start_lily = Lily.image.copy()
@@ -164,14 +171,16 @@ if __name__ == "__main__":
             screen.fill((255, 0, 0), (timer_size[0] + 3, 23, (timer_size[2] - 6) * n // time, 14))
             screen.blit(start_lily, start_lily_coords)
             screen.blit(frog, frog_coords)
-            string_rendered = font.render(f"{solution[0]} {'+' if solution_type else '-'} {solution[1]}", True, pygame.Color('black'))
+            string_rendered = font.render(f"{solution[0]} {'+' if solution_type else '-'} "
+                                          f"{solution[1]}", True, pygame.Color('black'))
             screen.blit(string_rendered, (timer_size[0], 45))
             lily_group.draw(screen)
             screen.blit(score_out, (0, size_y - 40))
             screen.blit(record_out, (int(size_x * 0.7), size_y - 40))
         elif ending:
-            if x >= xe:
+            if x >= xe - frog.get_width():
                 ending = False
+                x = xe
             tick = clock.tick()
             x += speed_x * tick / 1000
             y += speed_y * tick / 1000
