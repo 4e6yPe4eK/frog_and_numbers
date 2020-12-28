@@ -88,6 +88,7 @@ if __name__ == "__main__":
     record_out = None
     solution_type = True
     record, score = 0, 0
+    lily_num = 3
     pairs = []
     for i in range(1, 100):
         for j in range(1, 100):
@@ -110,44 +111,33 @@ if __name__ == "__main__":
         screen.blit(background, (0, 0))
         if starting:
             n = 0
+            time = int(time * 0.8)
             if randint(0, 1):
                 solution_type = True
-                time = int(time * 0.8)
                 some = choice(pairs)
                 solution = (some[0], some[1])
                 var = [some[0] + some[1]]
-                some = choice(pairs)
-                while some[0] + some[1] == var[0]:
+                for i in range(lily_num - 1):
                     some = choice(pairs)
-                var.append(some[0] + some[1])
-                some = choice(pairs)
-                while some[0] + some[1] == var[0] or some[0] + some[1] == var[1]:
-                    some = choice(pairs)
-                var.append(some[0] + some[1])
+                    while some[0] + some[1] in var:
+                        some = choice(pairs)
+                    var.append(some[0] + some[1])
             else:
                 solution_type = False
-                time = int(time * 0.8)
                 some = choice(pairs)
                 if some[0] < some[1]:
                     some[0], some[1] = some[1], some[0]
                 solution = (some[0], some[1])
                 var = [some[0] - some[1]]
-                some = choice(pairs)
-                if some[0] < some[1]:
-                    some[0], some[1] = some[1], some[0]
-                while some[0] - some[1] == var[0]:
+                for i in range(lily_num - 1):
                     some = choice(pairs)
                     if some[0] < some[1]:
                         some[0], some[1] = some[1], some[0]
-                var.append(some[0] - some[1])
-                some = choice(pairs)
-                if some[0] < some[1]:
-                    some[0], some[1] = some[1], some[0]
-                while some[0] - some[1] == var[0] or some[0] - some[1] == var[1]:
-                    some = choice(pairs)
-                    if some[0] < some[1]:
-                        some[0], some[1] = some[1], some[0]
-                var.append(some[0] - some[1])
+                    while some[0] - some[1] in var:
+                        some = choice(pairs)
+                        if some[0] < some[1]:
+                            some[0], some[1] = some[1], some[0]
+                    var.append(some[0] - some[1])
             shuffle(var)
             starting = False
             waiting = True
@@ -155,9 +145,21 @@ if __name__ == "__main__":
             start_lily_coords = (int(0.14 * size_x), int(0.4 * size_y))
             frog_coords = (int(0.18 * size_x), int(0.44 * size_y))
             lily_group = pygame.sprite.Group()
-            lily_group.add(Lily(int(0.62 * size_x), size_y // 4 - int(size_y / 4.8) // 2, str(var[0])))
-            lily_group.add(Lily(int(0.72 * size_x), size_y // 2 - int(size_y / 4.8) // 2, str(var[1])))
-            lily_group.add(Lily(int(0.62 * size_x), size_y // 4 * 3 - int(size_y / 4.8) // 2, str(var[2])))
+            for i in range(lily_num):
+                lily = Lily(randint(start_lily_coords[0] + Lily.image.get_width(),
+                                    size_x - Lily.image.get_width()),
+                            randint(90, size_y - Lily.image.get_height() - 40), str(var[i]))
+                f = True
+                while f:
+                    for sprite in lily_group:
+                        if pygame.sprite.collide_mask(sprite, lily):
+                            lily = Lily(randint(start_lily_coords[0] + Lily.image.get_width(),
+                                                size_x - Lily.image.get_width()),
+                                        randint(90, size_y - Lily.image.get_height() - 40), str(var[i]))
+                            break
+                    else:
+                        f = False
+                lily_group.add(lily)
             score_out = font.render(f'Счёт: {score}', False, pygame.color.Color('black'))
             record_out = font.render(f'Лучший: {record}', False, pygame.color.Color('black'))
             clock.tick()
