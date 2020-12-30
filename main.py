@@ -25,6 +25,7 @@ def load_image(name, color=None):
 
 class Lily(pygame.sprite.Sprite):
     image = pygame.transform.scale(load_image('lily.png'), (int(size_x / 7.2), int(size_y / 4.8)))
+    image_drown = pygame.transform.scale(load_image('boom_1.png'), (int(size_x / 7.2), int(size_y / 4.8)))
 
     def __init__(self, x, y, text):
         super().__init__()
@@ -45,7 +46,13 @@ class Lily(pygame.sprite.Sprite):
         return False
 
     def update(self, *args):
-        if args and args[0].type == pygame.MOUSEBUTTONDOWN and self.collide(args[0].pos):
+        if args and type(args[0]) is tuple:
+            print("1 -", self.rect.x, self.rect.y, args[0][0], args[0][1])
+            self.rect = self.rect.move(*args[0])
+            print("2 -", self.rect.x, self.rect.y, args[0][0], args[0][1])
+        elif args and args[0] is None:
+            self.image = Lily.image_drown.copy()
+        elif args and args[0].type == pygame.MOUSEBUTTONDOWN and self.collide(args[0].pos):
             global ending, waiting, n, x, y, xe, ye, speed_x, speed_y, angle
             x, y = frog_coords
             xe = self.rect.x + (self.image.get_width() - frog.get_width()) // 2
@@ -59,34 +66,37 @@ class Lily(pygame.sprite.Sprite):
             ending = True
             waiting = False
             clock.tick()
-            global correct
+            global wrong, drowned
             if solution_type and args[1][0] + args[1][1] == self.num or\
                     not solution_type and args[1][0] - args[1][1] == self.num:
-                correct = True
+                wrong = 0
             else:
-                correct = False
+                wrong = 1
+            drowned = self
 
 
 if __name__ == "__main__":
     win = pygame.mixer.Sound(os.path.join('data', 'win.wav'))
     lose = pygame.mixer.Sound(os.path.join('data', 'lose.wav'))
+    bul = pygame.mixer.Sound(os.path.join('data', 'bul.wav'))
     background = pygame.transform.scale(load_image('water.jpg'), (size_x, size_y))
     frog = pygame.transform.scale(pygame.transform.rotate(load_image('frog.png'), -90), (int(0.06 * size_x), int(0.13 * size_y)))
     frog_jump = pygame.transform.scale(load_image('frog_jump.png'), (int(0.1 * size_x), int(0.2 * size_y)))
     running = True
     waiting = False
     ending = False
-    animation = False
+    win_animation = False
     starting = True
     lily_group = None
     start_lily = None
     start_lily_coords = None
     frog_coords = None
     solution = None
-    correct = False
+    wrong = 1
     score_out = None
     record_out = None
     solution_type = True
+    drowned = None
     record, score = 0, 0
     lily_num = 3
     pairs = []
@@ -139,33 +149,37 @@ if __name__ == "__main__":
                             some[0], some[1] = some[1], some[0]
                     var.append(some[0] - some[1])
             shuffle(var)
-            starting = False
-            waiting = True
             start_lily = Lily.image.copy()
             start_lily_coords = (int(0.14 * size_x), int(0.4 * size_y))
             frog_coords = (int(0.18 * size_x), int(0.44 * size_y))
             lily_group = pygame.sprite.Group()
-            for i in range(lily_num):
-                lily = Lily(randint(start_lily_coords[0] + Lily.image.get_width(),
-                                    size_x - Lily.image.get_width()),
-                            randint(90, size_y - Lily.image.get_height() - 40), str(var[i]))
-                f = True
-                while f:
-                    for sprite in lily_group:
-                        if pygame.sprite.collide_mask(sprite, lily):
-                            lily = Lily(randint(start_lily_coords[0] + Lily.image.get_width(),
-                                                size_x - Lily.image.get_width()),
-                                        randint(90, size_y - Lily.image.get_height() - 40), str(var[i]))
-                            break
-                    else:
-                        f = False
-                lily_group.add(lily)
+            # for i in range(lily_num):
+            #     lily = Lily(randint(start_lily_coords[0] + Lily.image.get_width(),
+            #                         size_x - Lily.image.get_width()),
+            #                 randint(90, size_y - Lily.image.get_height() - 40), str(var[i]))
+            #     f = True
+            #     while f:
+            #         for sprite in lily_group:
+            #             if pygame.sprite.collide_mask(sprite, lily):
+            #                 lily = Lily(randint(start_lily_coords[0] + Lily.image.get_width(),
+            #                                     size_x - Lily.image.get_width()),
+            #                             randint(90, size_y - Lily.image.get_height() - 40), str(var[i]))
+            #                 break
+            #         else:
+            #             f = False
+            #     lily_group.add(lily)
+            lily_group.add(Lily(int(0.62 * size_x), size_y // 4 - int(size_y / 4.8) // 2, str(var[0])))
+            lily_group.add(Lily(int(0.72 * size_x), size_y // 2 - int(size_y / 4.8) // 2, str(var[1])))
+            lily_group.add(Lily(int(0.62 * size_x), size_y // 4 * 3 - int(size_y / 4.8) // 2, str(var[2])))
             score_out = font.render(f'Счёт: {score}', False, pygame.color.Color('black'))
             record_out = font.render(f'Лучший: {record}', False, pygame.color.Color('black'))
             clock.tick()
+            starting = False
+            if not win_animation:
+                waiting = True
         elif waiting:
             if n >= time:
-                correct = False
+                wrong = 2
                 x, y = frog_coords
                 waiting = False
             n += clock.tick()
@@ -191,24 +205,59 @@ if __name__ == "__main__":
             screen.blit(pygame.transform.rotate(frog_jump, angle), (int(x), int(y)))
             screen.blit(score_out, (0, size_y - 40))
             screen.blit(record_out, (int(size_x * 0.7), size_y - 40))
+        elif win_animation:
+            if x <= xe - frog.get_width():
+                win_animation = False
+                waiting = True
+                x = xe
+                clock.tick()
+            tick = clock.tick()
+            x += speed_x * tick / 1000
+            y += speed_y * tick / 1000
+            screen.blit(start_lily, (x - 0.04 * size_x, y - 0.04 * size_y))
+            screen.blit(frog, (x, y))
+            del_x = x - xe
+            del_y = y - ye
+            lily_group.update((del_x, del_y))
+            lily_group.draw(screen)
+            lily_group.update((-del_x, -del_y))
         else:
             screen.blit(score_out, (0, size_y - 40))
             screen.blit(record_out, (int(size_x * 0.7), size_y - 40))
-            screen.blit(start_lily, start_lily_coords)
-            lily_group.draw(screen)
-            screen.blit(frog, (int(x), int(y)))
-            pygame.display.flip()
-            if correct:
+            start_lily = Lily.image_drown.copy()
+            if not wrong:
+                lily_group.update(None)
+                drowned.image = Lily.image.copy()
+                lily_group.draw(screen)
+                screen.blit(frog, (int(x), int(y)))
+                screen.blit(start_lily, start_lily_coords)
+                pygame.display.flip()
                 score += 1
                 record = max(record, score)
+                bul.play(0)
+                sleep(0.5)
                 win.play(0)
                 sleep(1.5)
+                xe, ye = frog_coords
+                speed_x, speed_y = -speed_x, -speed_y
+                win_animation = True
+                starting = True
+                clock.tick()
+                start_lily = Lily.image.copy()
             else:
+                if wrong == 1:
+                    drowned.image = Lily.image_drown.copy()
+                    start_lily = Lily.image.copy()
+                lily_group.draw(screen)
+                screen.blit(start_lily, start_lily_coords)
+                pygame.display.flip()
                 score = 0
+                bul.play(0)
+                sleep(0.5)
                 lose.play(0)
                 sleep(3)
                 time = 12500
-            starting = True
+                starting = True
 
         pygame.display.flip()
 
