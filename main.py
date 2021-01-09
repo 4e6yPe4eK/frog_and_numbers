@@ -1,4 +1,4 @@
-﻿import pygame
+import pygame
 import os
 from random import choice, shuffle, randint
 from math import acos, pi, sqrt
@@ -205,8 +205,8 @@ if __name__ == "__main__":
                                           f"{solution[1]}", True, pygame.Color('blue'))
             screen.blit(string_rendered, (timer_size[0], 45))
             lily_group.draw(screen)
-            screen.blit(score_out, (0, size_y - 40))
-            screen.blit(record_out, (int(size_x * 0.7), size_y - 40))
+            screen.blit(score_out, (10, size_y - 60))
+            screen.blit(record_out, (int(size_x * 0.75), size_y - 60))
         elif ending:
             if x >= xe - frog.get_width():
                 ending = False
@@ -217,8 +217,8 @@ if __name__ == "__main__":
             screen.blit(start_lily, start_lily_coords)
             lily_group.draw(screen)
             screen.blit(pygame.transform.rotate(frog_jump, angle), (int(x), int(y)))
-            screen.blit(score_out, (0, size_y - 40))
-            screen.blit(record_out, (int(size_x * 0.7), size_y - 40))
+            screen.blit(score_out, (10, size_y - 60))
+            screen.blit(record_out, (int(size_x * 0.75), size_y - 60))
         elif win_animation:
             if x <= xe:
                 win_animation = False
@@ -234,8 +234,8 @@ if __name__ == "__main__":
             lily_group.draw(screen)
             lily_group.update((-del_x, 0))
         else:
-            screen.blit(score_out, (0, size_y - 40))
-            screen.blit(record_out, (int(size_x * 0.7), size_y - 40))
+            screen.blit(score_out, (10, size_y - 60))
+            screen.blit(record_out, (int(size_x * 0.75), size_y - 60))
             start_lily = Lily.image_drown.copy()
             lily_group.update(None)
             lily_group.draw(screen)
