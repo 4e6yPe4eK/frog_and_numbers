@@ -1,4 +1,4 @@
-import pygame
+﻿import pygame
 import os
 from random import choice, shuffle, randint
 from math import acos, pi, sqrt
@@ -8,7 +8,7 @@ pygame.mixer.init()
 size_x, size_y = 1155, 650
 pygame.display.set_caption('Frog and numbers')
 screen = pygame.display.set_mode((size_x, size_y))
-font = pygame.font.Font(None, 48)
+font = pygame.font.Font(os.path.join('data', 'font.ttf'), 48)
 
 
 def load_image(name, color=None):
@@ -36,7 +36,7 @@ class Lily(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
         self.num = int(text)
-        string_rendered = font.render(text, True, pygame.Color('black'))
+        string_rendered = font.render(text, True, pygame.Color('blue'))
         self.image.blit(string_rendered, (self.image.get_width() // 3, self.image.get_height() // 2))
 
     def collide(self, pos):
@@ -80,7 +80,7 @@ if __name__ == "__main__":
     lose = pygame.mixer.Sound(os.path.join('data', 'lose.wav'))
     bul = pygame.mixer.Sound(os.path.join('data', 'bul.wav'))
     jump = pygame.mixer.Sound(os.path.join('data', 'jump.wav'))
-    background = pygame.transform.scale(load_image('water.jpg'),
+    background = pygame.transform.scale(load_image('water_bresk.jpeg'),
                                         (size_x, size_y))
     frog = pygame.transform.scale(pygame.transform.rotate(load_image('frog.png'), -90),
                                   (int(0.06 * size_x), int(0.13 * size_y)))
@@ -185,8 +185,8 @@ if __name__ == "__main__":
                     if solution[0] - solution[1] == lily.num:
                         drowned = lily
                         break
-            score_out = font.render(f'Счёт: {score}', False, pygame.color.Color('black'))
-            record_out = font.render(f'Лучший: {record}', False, pygame.color.Color('black'))
+            score_out = font.render(f'Счёт: {score}', False, pygame.color.Color('blue'))
+            record_out = font.render(f'Лучший: {record}', False, pygame.color.Color('blue'))
             clock.tick()
             starting = False
             if not win_animation:
@@ -202,7 +202,7 @@ if __name__ == "__main__":
             screen.blit(start_lily, start_lily_coords)
             screen.blit(frog, frog_coords)
             string_rendered = font.render(f"{solution[0]} {'+' if solution_type else '-'} "
-                                          f"{solution[1]}", True, pygame.Color('black'))
+                                          f"{solution[1]}", True, pygame.Color('blue'))
             screen.blit(string_rendered, (timer_size[0], 45))
             lily_group.draw(screen)
             screen.blit(score_out, (0, size_y - 40))
