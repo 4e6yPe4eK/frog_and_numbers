@@ -1,4 +1,4 @@
-﻿import pygame
+import pygame
 import os
 from random import choice, shuffle, randint
 from math import acos, pi, sqrt
@@ -112,7 +112,7 @@ if __name__ == "__main__":
     time = 12500
     angle = 0
     n = 0
-    x, y, xe, ye = 0, 0, 0, 0
+    x, y, xe, ye = int(0.18 * size_x), int(0.44 * size_y), 0, 0
     speed_x, speed_y = 0, 0
     timer_size = (int(0.28 * size_x), 20, int(0.45 * size_x), 20)
     while running:
@@ -155,8 +155,8 @@ if __name__ == "__main__":
                     var.append(some[0] - some[1])
             shuffle(var)
             start_lily = Lily.image.copy()
-            start_lily_coords = (int(0.14 * size_x), int(0.4 * size_y))
-            frog_coords = (int(0.18 * size_x), int(0.44 * size_y))
+            start_lily_coords = (int(0.18 * size_x - 0.04 * size_x), int(y - 0.04 * size_y))
+            frog_coords = (int(0.18 * size_x), y)
             lily_group = pygame.sprite.Group()
             # for i in range(lily_num):
             #     lily = Lily(randint(start_lily_coords[0] + Lily.image.get_width(),
@@ -227,14 +227,12 @@ if __name__ == "__main__":
                 clock.tick()
             tick = clock.tick()
             x += speed_x * tick / 1000
-            y += speed_y * tick / 1000
             screen.blit(start_lily, (x - 0.04 * size_x, y - 0.04 * size_y))
             screen.blit(frog, (x, y))
             del_x = int(x - xe)
-            del_y = int(y - ye)
-            lily_group.update((del_x, del_y))
+            lily_group.update((del_x, 0))
             lily_group.draw(screen)
-            lily_group.update((-del_x, -del_y))
+            lily_group.update((-del_x, 0))
         else:
             screen.blit(score_out, (0, size_y - 40))
             screen.blit(record_out, (int(size_x * 0.7), size_y - 40))
@@ -266,6 +264,7 @@ if __name__ == "__main__":
                 lose.play(0)
                 sleep(3)
                 time = 12500
+                x, y = int(0.18 * size_x), int(0.44 * size_y)
                 starting = True
 
         pygame.display.flip()
